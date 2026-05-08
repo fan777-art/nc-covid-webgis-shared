@@ -274,21 +274,104 @@ async function renderDate(index) {
   }
 }
 
+function drawFallbackSummaryChart(canvas, labels, cases, deaths) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return;
+  }
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const pad = { top: 18, right: 12, bottom: 24, left: 42 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+
+  const allVals = [...cases, ...deaths];
+  const minVal = 0;
+  const maxVal = Math.max(...allVals);
+  const range = maxVal - minVal || 1;
+
+  const x = (i) => pad.left + (i / (labels.length - 1 || 1)) * plotW;
+  const y = (v) => pad.top + (1 - (v - minVal) / range) * plotH;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + plotH);
+  ctx.lineTo(pad.left + plotW, pad.top + plotH);
+  ctx.stroke();
+
+  const yTicks = 4;
+  ctx.fillStyle = "#475569";
+  ctx.font = "10px Manrope, sans-serif";
+  for (let i = 0; i <= yTicks; i += 1) {
+    const val = Math.round(minVal + ((maxVal - minVal) * (yTicks - i)) / yTicks);
+    const yy = pad.top + (i / yTicks) * plotH;
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.beginPath();
+    ctx.moveTo(pad.left, yy);
+    ctx.lineTo(pad.left + plotW, yy);
+    ctx.stroke();
+    ctx.fillText(val.toLocaleString("en-US"), 2, yy + 3);
+  }
+
+  const drawLine = (arr, color) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    arr.forEach((val, i) => {
+      const px = x(i);
+      const py = y(val);
+      if (i === 0) {
+        ctx.moveTo(px, py);
+      } else {
+        ctx.lineTo(px, py);
+      }
+    });
+    ctx.stroke();
+  };
+
+  drawLine(cases, "#0f766e");
+  drawLine(deaths, "#b91c1c");
+
+  ctx.fillStyle = "#0f766e";
+  ctx.fillRect(width - 130, 6, 10, 10);
+  ctx.fillStyle = "#334155";
+  ctx.fillText("Total cases", width - 115, 15);
+  ctx.fillStyle = "#b91c1c";
+  ctx.fillRect(width - 56, 6, 10, 10);
+  ctx.fillStyle = "#334155";
+  ctx.fillText("Deaths", width - 41, 15);
+}
+
 function buildChart() {
   const labels = state.summary.map((d) => d.date);
   const cases = state.summary.map((d) => d.total_cases);
   const deaths = state.summary.map((d) => d.total_deaths);
 
-  state.chart = new Chart(document.getElementById("summaryChart"), {
-    type: "line",
-    data: {
-      labels,
+  const canvas = document.getElementById("summaryChart");
+  if (typeof Chart === "undefined") {
+    drawFallbackSummaryChart(canvas, labels, cases, deaths);
+    return;
+  }
+
+  try {
+    state.chart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
       datasets: [
         {
           label: "Total cases",
           data: cases,
           borderColor: "#0f766e",
           backgroundColor: "#0f766e22",
+          yAxisID: "yCases",
           borderWidth: 2,
           fill: false,
           tension: 0.2,
@@ -299,6 +382,7 @@ function buildChart() {
           data: deaths,
           borderColor: "#b91c1c",
           backgroundColor: "#b91c1c22",
+          yAxisID: "yDeaths",
           borderWidth: 2,
           fill: false,
           tension: 0.2,
@@ -332,14 +416,37 @@ function buildChart() {
             autoSkip: false
           }
         },
-        y: {
+        yCases: {
+          type: "linear",
+          position: "left",
+          title: {
+            display: true,
+            text: "Cases"
+          },
+          ticks: {
+            callback: (v) => Number(v).toLocaleString("en-US")
+          }
+        },
+        yDeaths: {
+          type: "linear",
+          position: "right",
+          grid: {
+            drawOnChartArea: false
+          },
+          title: {
+            display: true,
+            text: "Deaths"
+          },
           ticks: {
             callback: (v) => Number(v).toLocaleString("en-US")
           }
         }
       }
-    }
-  });
+    });
+  } catch (err) {
+    console.error("Chart.js rendering failed, using fallback chart.", err);
+    drawFallbackSummaryChart(canvas, labels, cases, deaths);
+  }
 }
 
 async function init() {

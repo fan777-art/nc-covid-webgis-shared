@@ -184,6 +184,18 @@ input[type="range"] {
   font-size: 1rem;
 }
 
+.chart-shell {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+#summaryChart {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .detail-card {
   margin-top: 0.7rem;
   border: 1px solid var(--line);
