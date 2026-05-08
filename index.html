@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NC COVID-19 Web GIS Dashboard (2020)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -17,6 +20,22 @@
       <h1>North Carolina COVID-19 ZIP Dashboard</h1>
       <p>Daily ZIP-level cases and deaths from May 2 to Oct 2, 2020</p>
     </header>
+
+    <section class="panel workflow" aria-label="Project workflow">
+      <h2>Project Workflow</h2>
+      <ol>
+        <li><strong>Pull and inspect data structure</strong> from NC ZIP COVID time series.</li>
+        <li><strong>Build ZIP-level web map layer</strong> with date slider and metric switch.</li>
+        <li><strong>Add summary charts/time-series</strong> for daily statewide cases and deaths.</li>
+        <li><strong>Create cleaned exports</strong> in GeoJSON and CSV for reuse in web apps.</li>
+      </ol>
+      <div class="workflow-notes">
+        <span>Fine tuning included:</span>
+        <span>color scheme selector</span>
+        <span>county overlay layer</span>
+        <span>Local Moran's I layer</span>
+      </div>
+    </section>
 
     <main class="layout">
       <section class="panel controls" aria-label="Map controls">
