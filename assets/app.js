@@ -442,6 +442,7 @@ function buildChart() {
           }
         }
       }
+    }
     });
   } catch (err) {
     console.error("Chart.js rendering failed, using fallback chart.", err);
